@@ -1,0 +1,10 @@
+Important notes:
+
+1. Update "date_default_timezone_set('Asia/Dhaka');" to "date_default_timezone_set('Europe/Amsterdam');"
+
+
+
+Changes:
+1. Vendor product add: I found a mistake that sell_count was adding when vendor add a product. I change it to stock. Case sell_count will counting after product sell. Not before sell. Action performed link:http://127.0.0.1:8000/vendor/products/add
+
+2. Available quantity wise product view. If product sell_count count is equal to stock then that product will stop showing to page. Action performed link:http://127.0.0.1:8000/event/7/stallhall/22
