@@ -48,12 +48,12 @@
         @if(str_contains(getCurrentVendor()->permissions, 'approved'))
           @if(str_contains(getCurrentVendor()->permissions, 'logo'))
             {{-- @if($logoAd == true) --}}
-            @if(!getCurrentVendor()->logo)
+            @if(!getCurrentVendor()->logo || getCurrentVendor()->logo->enabled == 1)
               <a href="{{ url('/') }}/vendor/place-logo-ad" class="o-nav-link event">Logo Adverteren</a>
             @endif
           @endif
           @if(str_contains(getCurrentVendor()->permissions, 'movie'))
-            @if(!getCurrentVendor()->movie)
+            @if(!getCurrentVendor()->movie || getCurrentVendor()->movie->enabled == 1)
               <a href="{{ url('/') }}/vendor/place-movie" class="o-nav-link event">Movie Plaatsen</a>
             @endif
           @endif
@@ -66,7 +66,7 @@
               <a href="{{ url('/') }}/vendor/request-auction-product" class="o-nav-link event">Veiling-items Aanbieden</a>
           @endif
           @if(str_contains(getCurrentVendor()->permissions, 'goodiebag'))
-            @if(!getCurrentVendor()->goodiebag)
+            @if(!getCurrentVendor()->goodiebag || getCurrentVendor()->goodiebag->enabled == 1)
               <a href="{{ url('/') }}/vendor/request-goodiebag" class="o-nav-link event">Goodiebag Item aanbieden</a>
             @endif
           @endif
