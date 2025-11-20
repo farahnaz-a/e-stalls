@@ -76,6 +76,7 @@ Route::get('vendor-aanmaken', [AuthController::class, 'vendor']);
 Route::post('vendor-aanmaken', [AuthController::class, 'createVendor']);
 Route::post('authcreate', [AuthController::class, 'create']);
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth')->name('dashboard');
+Route::get('user/chat-box', [AuthController::class, 'chatBox'])->middleware('auth')->name('chatBox');
 Route::get('dashboard/bestellingen', [AuthController::class, 'orders'])->middleware('auth');
 Route::get('vernietig-account', [AuthController::class, 'destroy'])->middleware('auth');
 Route::post('vernietig-akkoord', [AuthController::class, 'destroyAccept'])->middleware('auth');

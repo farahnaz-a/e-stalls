@@ -188,6 +188,10 @@ class AuthController extends Controller
       if($user->permission == 2) return redirect('vendor');
       else return view('dashboard.index', [ 'user' => $user, 'events' => Event::where('status', 'live')->get() ]);
     }
+    function chatBox(){
+      $user = Auth::user();
+      if($user->permission == 1) return view('dashboard.chatBox');
+    }
 
     function orders(){
       if ( Auth::user() ){

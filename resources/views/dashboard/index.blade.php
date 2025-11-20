@@ -260,6 +260,9 @@
         <div class="login-form">
           <h1 class="dark">Overige acties</h1>
           <div>
+            <a href="user/chat-box">Chat Box</a>
+          </div>
+          <div>
             <a href="dashboard/bestellingen">Bekijk bestellingen</a>
           </div>
           <div>
