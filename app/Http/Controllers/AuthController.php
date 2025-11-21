@@ -189,8 +189,8 @@ class AuthController extends Controller
       else return view('dashboard.index', [ 'user' => $user, 'events' => Event::where('status', 'live')->get() ]);
     }
     function chatBox(){
-      $user = Auth::user();
-      if($user->permission == 1) return view('dashboard.chatBox');
+      $users = User::where('id', '!=', Auth::id())->get();
+      return view('dashboard.chatBox', compact('users'));
     }
 
     function orders(){

@@ -13,10 +13,13 @@
 
         .container1 {
             max-width: 1160px;
-            margin: 0 auto;
+            margin: 20px auto;
             display: flex;
             flex-direction: column;
             height: 80vh;
+            padding: 10px;
+            box-shadow: 0px 0px 8px -6px black;
+            border-radius: 5px;
         }
 
         /* Mobile Header */
@@ -52,9 +55,13 @@
             position: relative;
             flex-shrink: 0;
         }
+
+        .avatar img{
+            border-radius: 50%;
+        }
         .me {
 
-            background-image: url('/user-images/images.jpeg');
+            /* background-image: url('/user-images/images.jpeg'); */
              background-size: cover;
         }
         .user{
@@ -93,10 +100,11 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px 15px;
-            background-image: url("/user-images/istockphoto-1403848173-612x612.jpg");
-
+            background-image: url("{{ asset('user-images/chat-bg.svg') }}");
+            background-color: #F2F0F7;
             background-repeat: repeat;
-            background-color: #f9fafb;
+            background-color: #f4d0d82b;
+            background-size: 180px;
         }
 
         .message {
@@ -312,13 +320,13 @@
                  overflow-y: auto;
             }
              .container1 {
-                height: 89vh;
+                height: 85vh;
              }
               .sidebar {
                  margin-top: 100px !important;
                 position: absolute;
                 top: 0px;
-                height: 89vh;
+                height: 85vh;
               }
              .search-box{
                 flex: 1;
@@ -330,7 +338,7 @@
         }
         @media (max-width: 439px){
             .sidebar{
-                height: 89vh;
+                height: 85vh;
                 /* width: 80%;      */
             }
         }
@@ -444,7 +452,7 @@
             height: 36px;
             border-radius: 50%;
             /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-             background-image: url("/user-images/pexels-italo-melo-881954-2379004.jpg");
+             /* background-image: url("/user-images/pexels-italo-melo-881954-2379004.jpg"); */
             background-size: cover;
             display: flex;
             align-items: center;
@@ -473,24 +481,47 @@
             font-size: 11px;
             color: #6b7280;
         }
-            .footer {
-        margin-top: 0px !important;
-    }
+        .footer {
+            margin-top: 0px !important;
+        }
+
+        .start-chat{
+            text-align: center;
+            margin-top: 20vh;
+        }
+        .start-chat-button{
+            border-radius: 50%;
+            padding: 1.8rem 2rem;
+            box-shadow: 0 4px 8px 0 rgba(34, 41, 47, 0.12) !important;
+            background: #FFFFFF;
+            color: #6E6B7B;
+            margin-bottom: 1rem !important;
+        }
+        .start-chat-text{ 
+            background: #FFFFFF;
+            box-shadow: 0 4px 8px 0 rgba(34, 41, 47, 0.12) !important;
+            color: #6E6B7B;
+            font-size: 1.286rem;    
+            padding: 0.5rem 1rem;
+            border-radius: calc(0.357rem * 4);
+            cursor: pointer; 
+        }
+
     </style>
 
 
  @endpush
 @section('content')
 
-       <div class="body container1">
+    <div class="body container1">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="header-top">
                     <div class="user-profile">
-                        <div class="avatar me online"></div>
+                        <div class="avatar me online" style="background-image: url('https://ui-avatars.com/api/?name={{ \Auth::user()->first_name.' '.\Auth::user()->last_name }}&amp;size=300')"></div>
                         <div>
-                            <div class="chat-name">User</div>
+                            <div class="chat-name">{{ \Auth::user()->first_name }}</div>
                         </div>
                     </div>
                     <div class="search-box">
@@ -498,7 +529,7 @@
                             <circle cx="11" cy="11" r="8"/>
                             <path d="m21 21-4.35-4.35"/>
                         </svg>
-                        <input type="text" placeholder="Search chats">
+                        <input type="text" id="search" placeholder="Search chats">
                     </div>
                 </div>
             </div>
@@ -506,7 +537,16 @@
             <div class="chats-section">
                 <div class="chats-title">Chats</div>
                 <div class="chat-list">
-                    <div class="chat-item" onclick="selectChat(this)">
+                    @foreach ($users as $user)
+                        <div class="chat-item" data-name="{{ $user->first_name.' '.$user->last_name }}">
+                            <div class="chat-avatar" style="background-image: url('https://ui-avatars.com/api/?name={{ $user->first_name.' '.$user->last_name }}&amp;size=300')"></div>
+                            <div class="chat-info">
+                                <div class="chat-name">{{ $user->first_name }}</div>
+                                <div class="chat-id">{{ $user->town }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                    {{-- <div class="chat-item" onclick="selectChat(this)">
                         <div class="chat-avatar"></div>
                         <div class="chat-info">
                             <div class="chat-name">TH48896 🇧🇩</div>
@@ -528,7 +568,7 @@
                             <div class="chat-name">AT48916 🇺🇸</div>
                             <div class="chat-id">United States</div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
@@ -544,16 +584,23 @@
                         <line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
                 </button>
-                <div class="avatar user online"></div>
+                <div class="avatar online" id="currentUserAvatar" style="display: none;">
+                    <img src="https://ui-avatars.com/api/?name={{ \Auth::user()->first_name.' '.\Auth::user()->last_name }}&amp;size=300" alt="">
+                </div>
                 <div class="header-info">
-                    <h3>Jerin</h3>
+                    <h3 id="currentUserName"></h3>
                 </div>
             </div>
 
             <!-- Chat Messages Area -->
-            <div class="chat-messages">
-                <!-- Received Messages -->
-                <div class="message received">
+            <div class="chat-messages"> 
+                <div class="start-chat">
+                    <button class="start-chat-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square" style="height: 4rem; width: 4rem; font-size: 4rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </button><br>
+                    <span class="start-chat-text">Start Conversation</span>
+                </div>
+                {{-- <div class="message received">
                     <div class="message-avatar user"></div>
                     <div class="message-content">
                         <div class="message-bubble">
@@ -561,8 +608,7 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Sent Messages -->
+ 
                 <div class="message sent">
                     <div class="message-avatar me"></div>
                     <div class="message-content">
@@ -656,7 +702,7 @@
                             Can you tell me about your pricing plans?
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             <!-- Message Input Area -->
@@ -667,17 +713,13 @@
                             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                         </svg>
                     </button>
-                    <input type="file" id="fileInput" class="file-input" multiple>
+                    <input type="file" id="fileInput" class="file-input">
 
                     <div class="message-input-wrapper">
                         <textarea class="message-input" placeholder="Type your message or use speech to text" rows="1"></textarea>
                     </div>
 
-                    <button class="send-btn">
-                        <!-- <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="22" y1="2" x2="11" y2="13"/>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                        </svg> -->
+                    <button class="send-btn"> 
                         Send
                     </button>
                 </div>
@@ -689,6 +731,26 @@
 @endsection
 @push('js')
    <script>
+
+        $(document).ready(function(){
+            $("body").on('input', '#search', function(){
+			    let searchValue = $(this).val().toLowerCase();
+                $(".chat-item").filter(function() {
+                    $(this).toggle($(this).find(".chat-info").text().toLowerCase().indexOf(searchValue) > -1)
+                });
+            }); 
+
+            $('body').on('click', '.chat-item', function(){
+                let name = $(this).data('name');
+                $('#currentUserAvatar').show();
+                $('#currentUserAvatar').find('img').attr('src', "https://ui-avatars.com/api/?name="+name+"&amp;color=FFFFFF&amp;size=300");
+                $('#currentUserName').text(name);
+                $('.chat-item').removeClass('active');
+                $(this).addClass('active');
+            })
+        });
+
+
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -696,17 +758,17 @@
             overlay.classList.toggle('active');
         }
 
-        function selectChat(element) {
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            element.classList.add('active');
+        // function selectChat(element) {
+        //     document.querySelectorAll('.chat-item').forEach(item => {
+        //         item.classList.remove('active');
+        //     });
+        //     element.classList.add('active');
 
-            // Close sidebar on mobile after selection
-            if (window.innerWidth < 768) {
-                toggleSidebar();
-            }
-        }
+        //     // Close sidebar on mobile after selection
+        //     if (window.innerWidth < 768) {
+        //         toggleSidebar();
+        //     }
+        // }
 
         // Handle file selection
         document.getElementById('fileInput').addEventListener('change', function(e) {

@@ -91,6 +91,24 @@
       margin-right: 8px;
   }
 </style>
+{{-- <div class="stepper-container" style="width: 600px; height: 500px; background-color: red; padding: 30px; margin: 0 auto;">
+    <div class="step1" style="width: 500px; height: 400px; background-color: white; margin: 0 auto;">
+
+    </div>
+    <div class="step2" style="width: 500px; height: 400px; background-color: orange; display: none; margin: 0 auto;">
+
+    </div>
+    <div class="step3" style="width: 500px; height: 400px; background-color: black; display: none; margin: 0 auto;">
+
+    </div>
+    <div class="step4" style="width: 500px; height: 400px; background-color: green; display: none; margin: 0 auto;">
+        
+    </div>
+    <div style="text-align: center">
+        <button class="stepper-btn" data-direction="left">Previous</button>
+        <button class="stepper-btn" data-direction="right">Next</button>
+    </div>
+</div> --}}
 <div class="normal-section gradient wf-section">
    <div class="w-form-success" style="margin: 20px; display: {{ session('success') ? '':'none' }}">
     <div>{{ session('success') }}</div>
@@ -329,3 +347,35 @@
   });
 </script>
 @endsection
+
+{{-- @push('js')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js" integrity="sha512-MSOo1aY+3pXCOCdGAYoBZ6YGI0aragoQsg1mKKBHXCYPIWxamwOE7Drh+N5CPgGI5SA9IEKJiPjdfqWFWmZtRA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        let step = 1;
+        let max_step = 4;
+
+        $(document).ready(function(){
+            $('body').on('click', '.stepper-btn', function(){
+                let slide_direction = $(this).data('direction');
+                if(slide_direction == 'left' && step !=1){
+
+                    $('.step'+step).hide("slide", { direction: 'right' }, 200, function () {
+                        $('.step'+(--step)).show("slide", { direction: 'left' }, 200);
+                    }); 
+
+
+                    // $('.step'+step).slideUp();
+                    // $('.step'+(--step)).slideDown();
+                }else if(slide_direction == 'right' && step != max_step){ 
+                    // $('.step'+step).slideUp();
+                    // $('.step'+(++step)).slideDown();
+
+                     $('.step'+step).hide("slide", { direction: 'left' }, 200, function () {
+                        $('.step'+(++step)).show("slide", { direction: 'right' }, 200);
+                    }); 
+
+                }
+            })
+        });
+    </script>
+@endpush --}}

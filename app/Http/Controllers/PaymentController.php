@@ -53,10 +53,10 @@ class PaymentController extends Controller
       $order->paid_by = Auth::user()->id;
       $order->price = strval(number_format(Event::find($request->input('eventId'))->price, 2));
       $order->save();
-      $event = Event::find($request->input('eventId'));
-      $event->update([
-          'sell_count' => $event->sell_count + 1
-      ]);
+    //   $event = Event::find($request->input('eventId'));
+    //   $event->update([
+    //       'sell_count' => $event->sell_count + 1
+    //   ]);
 
       $payment = Mollie::api()->payments->create([
         "amount" => [
@@ -112,8 +112,10 @@ class PaymentController extends Controller
               $ticket->used = false;
               $ticket->usedBy = 0;
               $ticket->save();
-              $event = Event::find($ticket->eventID);
-              $event->max_tickets = $event->max_tickets - 1;
+              $event = Event::find($order->product_code); 
+              $event->update([
+                 'sell_count' => $event->sell_count + 1
+              ]);
               Mail::to($order->email)->send(new OrderConfirmation(strval($ticket->ticketSN), $order->first_name, $event->start_time, $event->end_time, $event->start_date, $event->end_date, $event->name, url('/') . "/event/" . strval($event->id)));
               $order->paid = "paid";
               $order->save();
