@@ -16,6 +16,8 @@ use App\Mail\UserDeleteMail;
 use App\Models\PasswordResetToken;
 use Mail;
 use App\Mail\VendorCreateMail;
+use App\Models\Message;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -177,7 +179,7 @@ class AuthController extends Controller
       $user->town = $request->input('town');
       $user->country = $request->input('country');
       $user->entered_event = $user->entered_event;
-      $user->permission = 1;
+    //   $user->permission = 1;
       $user->save();
 
       return redirect('dashboard');
@@ -189,8 +191,9 @@ class AuthController extends Controller
       else return view('dashboard.index', [ 'user' => $user, 'events' => Event::where('status', 'live')->get() ]);
     }
     function chatBox(){
+      $messages = Message::where('sender_id', Auth::id())->orWhere('receiver_id', Auth::id())->orderBy('created_at', 'desc')->get();
       $users = User::where('id', '!=', Auth::id())->get();
-      return view('dashboard.chatBox', compact('users'));
+      return view('dashboard.chatBox', compact('users', 'messages'));
     }
 
     function orders(){
@@ -263,5 +266,42 @@ class AuthController extends Controller
       $request->session()->regenerateToken();
 
       return redirect('/');
+    }
+
+    public function messages(Request $request){
+
+        $pair = self::pair(Auth::id(), $request->user_id);
+        $messages = Message::where('pair', $pair)->get();
+        $message_view = view('dashboard.message', compact('messages'))->render();
+        $last_message =  Message::where('pair', $pair)->latest()->first()->id ?? '';
+        return response()->json(['message' => $message_view, 'last_message' => $last_message]);
+    }
+
+    public function messageSend(Request $request){
+        $pair = self::pair(Auth::id(), $request->user_id);
+        Message::create([
+            'message' => $request->message,
+            'sender_id' => Auth::id(),
+            'receiver_id' => $request->user_id,
+            'pair' => $pair,
+        ]);
+        if($request->last_message){
+            $messages = Message::where('pair', $pair)->where('id','>', $request->last_message)->get();
+        }else{
+            $messages = Message::where('pair', $pair)->get();
+        }
+        
+        $message_view = view('dashboard.message', compact('messages'))->render();
+        $last_message =  Message::where('pair', $pair)->latest()->first()->id ?? '';
+        return response()->json(['message' => $message_view, 'last_message' => $last_message]);
+    }
+
+    public function messageRender(Request $request){
+        $pair = self::pair(Auth::id(), $request->user_id); 
+        $messages = Message::where('pair', $pair)->where('id','>', $request->last_message)->get();
+        
+        $message_view = view('dashboard.message', compact('messages'))->render();
+        $last_message =  Message::where('pair', $pair)->latest()->first()->id ?? '';
+        return response()->json(['message' => $message_view, 'last_message' => $last_message, 'last_messages_count' => $messages->count()]);
     }
 }

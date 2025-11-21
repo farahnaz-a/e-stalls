@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPassword;
-
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -67,6 +67,17 @@ class User extends Authenticatable
     public function getVendor(){
         return $this->hasOne(Vendor::class, 'ownerID', 'id');
     }
+
+    // public function lastMessage(){
+
+    //     if(Auth::id() > $this->id){
+    //         $pair = $this->id.'pair'.Auth::id();
+    //     }else{
+    //         $pair = Auth::id().'pair'.$this->id;
+    //     }
+
+    //     return Message::where('pair', $pair)->latest()->first();
+    // }
 
 
 

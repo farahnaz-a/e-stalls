@@ -56,7 +56,7 @@
             flex-shrink: 0;
         }
 
-        .avatar img{
+        .avatar img, .message-avatar img{
             border-radius: 50%;
         }
         .me {
@@ -537,12 +537,39 @@
             <div class="chats-section">
                 <div class="chats-title">Chats</div>
                 <div class="chat-list">
-                    @foreach ($users as $user)
-                        <div class="chat-item" data-name="{{ $user->first_name.' '.$user->last_name }}">
+                    @php
+                        $render_user_arr = [];
+                    @endphp
+                    @foreach ($messages as $message)
+                        @php
+                            if($message->sender_id == \Auth::id()){
+                                if(in_array($message->receiver_id, $render_user_arr)){
+                                    continue;
+                                }
+                                $message_user = $message->receiver;
+                                $render_user_arr[] = $message->receiver_id; 
+                            }else{
+                                if(in_array($message->sender_id, $render_user_arr)){
+                                    continue;
+                                }
+                                $message_user = $message->sender;
+                                $render_user_arr[] = $message->sender_id; 
+                            }
+                        @endphp
+                        <div class="chat-item" data-id="{{ $message_user->id }}" data-name="{{ $message_user->first_name.' '.$message_user->last_name }}">
+                            <div class="chat-avatar" style="background-image: url('https://ui-avatars.com/api/?name={{ $message_user->first_name.' '.$message_user->last_name }}&amp;size=300')"></div>
+                            <div class="chat-info">
+                                <div class="chat-name">{{ $message_user->first_name }}</div>
+                                <div class="chat-id chat-id{{ $message_user->id }}">{{ $message->message }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                    @foreach ($users->whereNotIn('id', $render_user_arr) as $user)
+                        <div class="chat-item" data-id="{{ $user->id }}" data-name="{{ $user->first_name.' '.$user->last_name }}">
                             <div class="chat-avatar" style="background-image: url('https://ui-avatars.com/api/?name={{ $user->first_name.' '.$user->last_name }}&amp;size=300')"></div>
                             <div class="chat-info">
                                 <div class="chat-name">{{ $user->first_name }}</div>
-                                <div class="chat-id">{{ $user->town }}</div>
+                                <div class="chat-id chat-id{{ $user->id }}"></div>
                             </div>
                         </div>
                     @endforeach
@@ -594,12 +621,12 @@
 
             <!-- Chat Messages Area -->
             <div class="chat-messages"> 
-                <div class="start-chat">
+                {{-- <div class="start-chat">
                     <button class="start-chat-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square" style="height: 4rem; width: 4rem; font-size: 4rem;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     </button><br>
                     <span class="start-chat-text">Start Conversation</span>
-                </div>
+                </div> --}}
                 {{-- <div class="message received">
                     <div class="message-avatar user"></div>
                     <div class="message-content">
@@ -708,12 +735,12 @@
             <!-- Message Input Area -->
             <div class="message-input-area">
                 <div class="input-wrapper">
-                    <button class="attach-btn" onclick="document.getElementById('fileInput').click()">
+                    {{-- <button class="attach-btn" onclick="document.getElementById('fileInput').click()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                         </svg>
                     </button>
-                    <input type="file" id="fileInput" class="file-input">
+                    <input type="file" id="fileInput" class="file-input"> --}}
 
                     <div class="message-input-wrapper">
                         <textarea class="message-input" placeholder="Type your message or use speech to text" rows="1"></textarea>
@@ -732,6 +759,36 @@
 @push('js')
    <script>
 
+        let last_message = '';
+        let selected_user_id;
+
+        setInterval(() => {
+            let user_id = selected_user_id;
+            if(selected_user_id && last_message){
+                $.ajaxSetup({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+                $.ajax({
+                    type  : "POST",
+                    url   : "{{ route('chat.message.render') }}",
+                    data  : {user_id, last_message},
+                    success: response => {
+                    last_message = response.last_message;
+                    if(response.last_messages_count){
+                        $(".chat-messages").append(response.message); 
+                            $('.chat-messages').animate({
+                            scrollTop: $('.chat-messages')[0].scrollHeight
+                        }, 400); 
+                    }
+                    },
+                    error: errors => {
+                    },
+                });
+            }
+        }, 3000);
+
         $(document).ready(function(){
             $("body").on('input', '#search', function(){
 			    let searchValue = $(this).val().toLowerCase();
@@ -742,11 +799,64 @@
 
             $('body').on('click', '.chat-item', function(){
                 let name = $(this).data('name');
+                let user_id = $(this).data('id');
                 $('#currentUserAvatar').show();
                 $('#currentUserAvatar').find('img').attr('src', "https://ui-avatars.com/api/?name="+name+"&amp;color=FFFFFF&amp;size=300");
-                $('#currentUserName').text(name);
+                $('#currentUserName').text(name); 
+                selected_user_id = user_id;
                 $('.chat-item').removeClass('active');
                 $(this).addClass('active');
+                $('.message-input').val('');
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+                    $.ajax({
+                        type  : "POST",
+                        url   : "{{ route('chat.message') }}",
+                        data  : {user_id},
+                        success: response => {
+                            last_message = response.last_message; 
+                            $(".chat-messages").html(response.message); 
+                            $('.chat-messages').animate({
+                                scrollTop: $('.chat-messages')[0].scrollHeight
+                            }, 400);  
+                        },
+                        error: errors => {  
+                        },
+                    });
+            })
+            $('body').on('click', '.send-btn', function(){
+                let message = $('.message-input').val(); 
+                let user_id = selected_user_id;            
+                if(user_id){
+                    if(!message){                     
+                        $('.message-input').focus();
+                    }else{
+                        $.ajaxSetup({
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            }
+                        });
+                        $.ajax({
+                            type  : "POST",
+                            url   : "{{ route('chat.message.send') }}",
+                            data  : {user_id, message, last_message},
+                            success: response => {
+                            last_message = response.last_message;
+                                $(".chat-messages").append(response.message);
+                                $(".chat-id"+user_id).text(message);
+                                $('.message-input').val('');
+                                 $('.chat-messages').animate({
+                                    scrollTop: $('.chat-messages')[0].scrollHeight
+                                }, 400); 
+                            },
+                            error: errors => {
+                            },
+                        });
+                    }
+                }
             })
         });
 
@@ -771,13 +881,12 @@
         // }
 
         // Handle file selection
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const files = e.target.files;
-            if (files.length > 0) {
-                console.log('Selected files:', files);
-                // Handle file upload here
-            }
-        });
+        // document.getElementById('fileInput').addEventListener('change', function(e) {
+        //     const files = e.target.files;
+        //     if (files.length > 0) {
+        //         console.log('Selected files:', files); 
+        //     }
+        // });
 
         // Auto-resize textarea
         const textarea = document.querySelector('.message-input');

@@ -81,6 +81,9 @@ Route::get('dashboard/bestellingen', [AuthController::class, 'orders'])->middlew
 Route::get('vernietig-account', [AuthController::class, 'destroy'])->middleware('auth');
 Route::post('vernietig-akkoord', [AuthController::class, 'destroyAccept'])->middleware('auth');
 Route::post('authupdate', [AuthController::class, 'update'])->middleware('auth');
+Route::post('chat-message', [AuthController::class, 'messages'])->name('chat.message');
+Route::post('chat-message-send', [AuthController::class, 'messageSend'])->name('chat.message.send');
+Route::post('chat-message-render', [AuthController::class, 'messageRender'])->name('chat.message.render');
 
 // Event Routes
 Route::get('event/{id}', [EventController::class, 'index'])->middleware('auth');
